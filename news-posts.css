@@ -66,11 +66,49 @@
                     gap: 40px;
 
                     .news-posts__item {
-                        &:nth-child(odd) {
+                        min-width: 334px;
+                        /* Ensure cards don't shrink below 334px */
+
+                        &:nth-child(2n+1) {
                             justify-self: start;
                         }
 
-                        &:nth-child(even) {
+                        &:nth-child(2n) {
+                            justify-self: end;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* Switch to 3 columns when screen is wide enough for 3x334px + 2x40px gap in 90vw space */
+@media (min-width: 1200px) {
+    .news-posts {
+        .news-posts__inner {
+            .news-posts___content {
+                .news-posts__grid {
+                    grid-template-columns: repeat(3, 1fr);
+
+                    .news-posts__item {
+
+                        /* Reset 2-column nth-child justification */
+                        &:nth-child(2n+1),
+                        &:nth-child(2n) {
+                            justify-self: stretch;
+                        }
+
+                        /* Apply 3-column justification */
+                        &:nth-child(3n+1) {
+                            justify-self: start;
+                        }
+
+                        &:nth-child(3n+2) {
+                            justify-self: center;
+                        }
+
+                        &:nth-child(3n) {
                             justify-self: end;
                         }
                     }
