@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "acf/news-posts-block",
+    "title": "News Posts Block",
+    "description": "A block to display recent news posts",
+    "category": "wvhdf",
+    "icon": "megaphone",
+    "keywords": ["news", "posts", "recent"],
+    "acf": {
+      "mode": "preview",
+      "renderTemplate": "news-posts.php"
+    },
+    "supports": {
+      "align": ["wide", "full"],
+      "anchor": true,
+      "jsx": true
+    },
+    "example": {
+      "attributes": {
+        "mode": "preview",
+        "data": {
+          "news_title": "Latest News",
+          "news_description": "Stay updated with the latest news posts."
+        }
+      }
+    },
+    "style": "file:./news-posts.css",
+    "script": "file:./news-posts.js"
+}
