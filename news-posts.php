@@ -14,8 +14,18 @@ $sidebar_text = get_field('sidebar_text');
 $section_title = get_field('section_title');
 $layout_options = get_field('layout_options');
 $color_settings = get_field('color_settings');
+$sidebar_background_value = isset($color_settings['sidebar_background']) ? $color_settings['sidebar_background'] : '';
+$small_leaf_color = (strpos($color_settings['primary_accent'], '#') === 0)
+    ? $color_settings['primary_accent']
+    : 'var(--' . $color_settings['primary_accent'] . ')';
 
 $className = 'news-posts';
+if (!empty($block['className'])) {
+    $className .= ' ' . $block['className'];
+}
+if (!empty($block['align'])) {
+    $className .= ' align' . $block['align'];
+}
 if (!empty($layout_options['additional_classes'])) {
     $className .= ' ' . $layout_options['additional_classes'];
 }
@@ -29,15 +39,19 @@ if ($layout_options['vertical_bar_visible']) {
 
 $post_categories = get_field('post_categories');
 
-$block_id = !empty($layout_options['section_id']) ? $layout_options['section_id'] : 'section-' . $block['id'];
+$section_id = !empty($layout_options['section_id']) ? $layout_options['section_id'] : 'section-' . $block['id'];
+if (!empty($block['anchor'])) {
+    $section_id = $block['anchor'];
+}
 
 ?>
 
 
 
-<section class="dr-full-width <?php echo esc_attr($className); ?> <? echo esc_attr($block_id); ?>" style="background-color:<?php echo ($color_settings['section_background']); ?>;">
+<section id="<?php echo esc_attr($section_id); ?>" class="dr-full-width <?php echo esc_attr($className); ?> <?php echo esc_attr($section_id); ?>" style="background-color:<?php echo ($color_settings['section_background']); ?>;">
     <div class="news-posts__inner">
-        <div class="sidebar-container">
+        <div class="sidebar-container" style="background-color: var(--<?php echo esc_attr($sidebar_background_value); ?>);">
+            <!-- Debug sidebar background value: <?php echo esc_html($sidebar_background_value); ?> -->
             <div class="leafs-container">
                 <div class="primary-color-leaf" style="background-color:<?php echo ($color_settings['primary_accent']); ?>"></div>
                 <div class="secondary-color-leaf" style="background-color:<?php echo ($color_settings['secondary_accent']); ?>"></div>
@@ -46,7 +60,7 @@ $block_id = !empty($layout_options['section_id']) ? $layout_options['section_id'
                 <p><?php echo $sidebar_text; ?></p>
             </div>
         </div>
-        <div class="news-posts___content">
+        <div class="news-posts___content" style="--small-leaf-color: <?php echo esc_attr($small_leaf_color); ?>;">
             <h2 class="news-posts__title"><?php echo $section_title; ?></h2>
             <?php
             // Categories are the IDs of the selected categories
@@ -65,16 +79,40 @@ $block_id = !empty($layout_options['section_id']) ? $layout_options['section_id'
             $news_query = new WP_Query($args);
             $posts_shown = 0;
             if ($news_query->have_posts()) :
-                echo '<div class="news-posts__grid "' . $categories . '>';
+                echo '<div class="news-posts__grid">';
                 while ($news_query->have_posts()) : $news_query->the_post();
                     $postCLass = 'news-posts__item';
+                    $post_id = get_the_ID();
+                    $image_position_x = get_post_meta($post_id, 'post_image_position_x', true);
+                    $image_position_y = get_post_meta($post_id, 'post_image_position_y', true);
+
+                    if ($image_position_x === '' && function_exists('get_field')) {
+                        $image_position_x = get_field('post_image_position_x', $post_id, false);
+                    }
+                    if ($image_position_y === '' && function_exists('get_field')) {
+                        $image_position_y = get_field('post_image_position_y', $post_id, false);
+                    }
+
+                    $image_position_x = is_numeric($image_position_x) ? (int) $image_position_x : 50;
+                    $image_position_y = is_numeric($image_position_y) ? (int) $image_position_y : 50;
+                    $image_position_x = max(0, min(100, $image_position_x));
+                    $image_position_y = max(0, min(100, $image_position_y));
+                    $image_style = sprintf('object-fit: cover; object-position: %d%% %d%%;', $image_position_x, $image_position_y);
                     if ($posts_shown >= 2) {
                         $postCLass = 'news-posts__item--hidden';
                         // Get the 
                     }
                     ?>
                     <div class="<?php echo esc_attr($postCLass); ?>">
-                        <div class="news-posts__item-image" style="background-image: url('<?php echo get_the_post_thumbnail_url(get_the_ID(), 'large'); ?>');"></div>
+                        <?php if (has_post_thumbnail()) : ?>
+                            <?php echo get_the_post_thumbnail(get_the_ID(), 'large', array(
+                                'class' => 'news-posts__item-image',
+                                'style' => $image_style,
+                                'loading' => 'lazy',
+                            )); ?>
+                        <?php else : ?>
+                            <div class="news-posts__item-image news-posts__item-image--empty" aria-hidden="true"></div>
+                        <?php endif; ?>
                         <div class="news-posts__item-content">
                             <div class="news-posts__details">
                                 <p class="news-posts__category">
@@ -102,8 +140,7 @@ $block_id = !empty($layout_options['section_id']) ? $layout_options['section_id'
             ?>
             
             <div class="load-more-container">
-                <!-- <a class="secondary-button" id="load-more-posts">Load More Posts</a> -->
-                 <a class="secondary-button" id="load-more-posts">Load More <? echo esc_html($categories[0]->name); ?> </a>
+                 <a class="secondary-button" id="load-more-posts">Load More <?php echo !empty($categories) ? esc_html($categories[0]->name) : 'Posts'; ?> </a>
             </div>
             <?php
             endif;

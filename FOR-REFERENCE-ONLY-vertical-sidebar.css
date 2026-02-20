@@ -1,0 +1,149 @@
+main:has(.has-vertical-bar) {
+    overflow: visible !important;
+}
+
+.has-vertical-bar {
+    position: relative;
+    padding-left: min(16.7vw, 81px);
+
+    .sidebar-container {
+        position: sticky;
+        top: 139px;
+        /* Distance from viewport top when stuck */
+        width: min(8.3vw, 81px);
+        height: calc(100vh - 139px);
+        /* Fill viewport from header to bottom */
+        background-color: var(--sidebar-background-color);
+        margin-left: calc(-1 * min(16.7vw, 81px));
+        margin-bottom: -139px;
+        flex-shrink: 0;
+        align-self: flex-start;
+        /* Restored to allow sticky scroll */
+        border-radius: 0 32px 0px 0;
+
+        display: flex;
+        align-items: flex-start;
+        flex-direction: column;
+        /* justify-content: center; */
+        /* margin-top: min(-14.3vw, -61px); */
+
+        .leafs-container {
+            width: 100%;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+
+            .primary-color-leaf {
+                width: 100%;
+                aspect-ratio: 50/71;
+                align-self: flex-start;
+                border-radius: 0 16px 0 16px;
+            }
+
+            .secondary-color-leaf {
+                margin-top: -100%;
+                width: 100%;
+                aspect-ratio: 50/71;
+                align-self: flex-start;
+                border-radius: 0 16px 0 16px;
+            }
+        }
+
+
+        .sidebar-text-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+
+            p {
+                writing-mode: vertical-rl;
+                text-orientation: upright;
+                color: var(--custom-black);
+                margin: 0;
+                /* Remove default paragraph margin */
+                text-align: center;
+                text-transform: uppercase;
+                /* font-size: 16px; */
+                font-style: normal;
+                font-weight: 500;
+                line-height: 24px;
+                /* 150% */
+                letter-spacing: 0.32px;
+                /* align-self: center;
+                justify-self: center; */
+            }
+        }
+    }
+}
+
+
+
+/* =============================================================================
+   Section Container Block - 640px (40em)
+   ============================================================================= */
+@media screen and (min-width: 30em) {
+
+    .has-vertical-bar {
+        padding-left: min(16.7vw, 81px);
+
+        .sidebar-container {
+
+            .leafs-container {
+                .primary-color-leaf {
+                    width: 100%;
+                    aspect-ratio: 50/71;
+                    align-self: flex-start;
+                    border-radius: 0 24px 0 24px;
+                }
+
+                .secondary-color-leaf {
+                    margin-top: -100%;
+                    width: 100%;
+                    aspect-ratio: 50/71;
+                    align-self: flex-start;
+                    border-radius: 0 24px 0 24px;
+                }
+            }
+
+            p {}
+        }
+    }
+}
+
+
+/* =============================================================================
+   Section Container Block - 640px (40em)
+   ============================================================================= */
+
+@media screen and (min-width: 40em) {
+
+
+    .has-vertical-bar {
+        padding-left: min(16.7vw, 81px);
+
+        .sidebar-container {
+
+            .leafs-container {
+                .primary-color-leaf {
+                    width: 100%;
+                    aspect-ratio: 1;
+                    align-self: flex-start;
+                    border-radius: 0 32px 0 32px;
+                }
+
+                .secondary-color-leaf {
+                    margin-top: -72%;
+                    width: 100%;
+                    aspect-ratio: 1;
+                    align-self: flex-start;
+                    border-radius: 0 32px 0 32px;
+                }
+            }
+
+            p {}
+        }
+    }
+}
