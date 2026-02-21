@@ -134,10 +134,10 @@
                         },
                         "hide_admin": 0,
                         "choices": {
-                            "white": "White",
-                            "light_blue": "Light Blue",
-                            "light_blue_2": "Light Blue 2",
-                            "neutral_1": "Neutral 1"
+                            "custom-white": "White",
+                            "custom-light-blue": "Light Blue",
+                            "custom-light-blue-2": "Light Blue 2",
+                            "custom-neutral-1": "Neutral 1"
                         },
                         "default_value": "light_blue",
                         "return_format": "value",

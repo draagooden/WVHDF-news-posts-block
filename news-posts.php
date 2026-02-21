@@ -38,6 +38,19 @@ if ($layout_options['vertical_bar_visible']) {
 
 
 $post_categories = get_field('post_categories');
+$posts_count_raw = get_field('#_of_posts');
+$posts_per_page = 6;
+
+if (is_string($posts_count_raw)) {
+    $posts_count_raw = trim($posts_count_raw);
+}
+
+if (is_numeric($posts_count_raw)) {
+    $posts_count_value = (int) $posts_count_raw;
+    $posts_per_page = ($posts_count_value <= 0) ? -1 : $posts_count_value;
+} elseif (is_string($posts_count_raw) && strtolower($posts_count_raw) === 'all') {
+    $posts_per_page = -1;
+}
 
 $section_id = !empty($layout_options['section_id']) ? $layout_options['section_id'] : 'section-' . $block['id'];
 if (!empty($block['anchor'])) {
@@ -67,13 +80,13 @@ if (!empty($block['anchor'])) {
             if (!empty($post_categories)) {
                 $args = array(
                     'post_type' => 'post',
-                    'posts_per_page' => 6,
+                    'posts_per_page' => $posts_per_page,
                     'category__in' => $post_categories,
                 );
             } else {
                 $args = array(
                     'post_type' => 'post',
-                    'posts_per_page' => 6,
+                    'posts_per_page' => $posts_per_page,
                 );
             }
             $news_query = new WP_Query($args);
