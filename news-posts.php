@@ -57,24 +57,48 @@ if (!empty($block['anchor'])) {
     $section_id = $block['anchor'];
 }
 
+$section_bg = $color_settings['section_background'];
+$section_bg_style = (strpos($section_bg, '#') === 0 ? esc_attr($section_bg) : 'var(--' . esc_attr($section_bg) . ')');
+
+// Automatic card and placeholder background overrides based on section background.
+$section_bg_key = strtolower(trim((string) $section_bg));
+$is_neutral_1_section = in_array($section_bg_key, ['#f1f5f6', 'custom-neutral-1', 'custom_neutral_1', 'neutral-1', 'neutral_1', 'bg-custom-neutral-1', 'bg_custom_neutral_1'], true);
+$placeholder_bg_style = $is_neutral_1_section
+    ? '--section-placeholder-bg: var(--custom-light-blue);'
+    : '--section-placeholder-bg: var(--custom-neutral-1);';
+
+$is_light_blue_section = in_array($section_bg_key, ['#ecf3f6', 'light_blue', 'custom-light-blue', 'custom_light_blue'], true);
+$is_white_section = in_array($section_bg_key, ['#ffffff', 'white', 'custom-white', 'custom_white'], true);
+$automated_card_bg = $is_light_blue_section
+    ? 'var(--custom-white)'
+    : ($is_white_section ? 'var(--custom-light-blue)' : 'var(--custom-white)');
+$section_card_bg_style = '--section-card-bg: ' . $automated_card_bg . ';';
 ?>
 
 
 
-<section id="<?php echo esc_attr($section_id); ?>" class="dr-full-width <?php echo esc_attr($className); ?> <?php echo esc_attr($section_id); ?>" style="background-color:<?php echo ($color_settings['section_background']); ?>;">
+<section id="<?php echo esc_attr($section_id); ?>"
+    class="dr-full-width <?php echo esc_attr($className); ?> <?php echo esc_attr($section_id); ?>"
+    style="background-color:<?php echo $section_bg_style; ?>; <?php echo $placeholder_bg_style; ?> <?php echo $section_card_bg_style; ?>">
     <div class="news-posts__inner">
-        <div class="sidebar-container" style="background-color: var(--<?php echo esc_attr($sidebar_background_value); ?>);">
+        <div class="sidebar-container"
+            style="background-color: var(--<?php echo esc_attr($sidebar_background_value); ?>);">
             <!-- Debug sidebar background value: <?php echo esc_html($sidebar_background_value); ?> -->
             <div class="leafs-container">
-                <div class="primary-color-leaf" style="background-color:<?php echo ($color_settings['primary_accent']); ?>"></div>
-                <div class="secondary-color-leaf" style="background-color:<?php echo ($color_settings['secondary_accent']); ?>"></div>
+                <div class="primary-color-leaf"
+                    style="background-color:<?php echo ($color_settings['primary_accent']); ?>"></div>
+                <div class="secondary-color-leaf"
+                    style="background-color:<?php echo ($color_settings['secondary_accent']); ?>"></div>
             </div>
             <div class="sidebar-text-container">
                 <p><?php echo $sidebar_text; ?></p>
             </div>
         </div>
         <div class="news-posts___content" style="--small-leaf-color: <?php echo esc_attr($small_leaf_color); ?>;">
-            <h2 class="news-posts__title"><?php echo $section_title; ?></h2>
+            <div class="news-posts__title-container">
+                <div class="news-posts__title-leaf" aria-hidden="true"></div>
+                <h2 class="news-posts__title"><?php echo $section_title; ?></h2>
+            </div>
             <?php
             // Categories are the IDs of the selected categories
             if (!empty($post_categories)) {
@@ -91,14 +115,19 @@ if (!empty($block['anchor'])) {
             }
             $news_query = new WP_Query($args);
             $posts_shown = 0;
-            if ($news_query->have_posts()) :
+            if ($news_query->have_posts()):
                 echo '<div class="news-posts__grid">';
-                while ($news_query->have_posts()) : $news_query->the_post();
+                while ($news_query->have_posts()):
+                    $news_query->the_post();
                     $postCLass = 'news-posts__item';
                     $post_id = get_the_ID();
+                    $image_fit = get_post_meta($post_id, 'post_image_fit', true);
                     $image_position_x = get_post_meta($post_id, 'post_image_position_x', true);
                     $image_position_y = get_post_meta($post_id, 'post_image_position_y', true);
 
+                    if ($image_fit === '' && function_exists('get_field')) {
+                        $image_fit = get_field('post_image_fit', $post_id, false);
+                    }
                     if ($image_position_x === '' && function_exists('get_field')) {
                         $image_position_x = get_field('post_image_position_x', $post_id, false);
                     }
@@ -106,56 +135,60 @@ if (!empty($block['anchor'])) {
                         $image_position_y = get_field('post_image_position_y', $post_id, false);
                     }
 
+                    $image_fit = in_array($image_fit, array('cover', 'contain'), true) ? $image_fit : 'cover';
                     $image_position_x = is_numeric($image_position_x) ? (int) $image_position_x : 50;
                     $image_position_y = is_numeric($image_position_y) ? (int) $image_position_y : 50;
                     $image_position_x = max(0, min(100, $image_position_x));
                     $image_position_y = max(0, min(100, $image_position_y));
-                    $image_style = sprintf('object-fit: cover; object-position: %d%% %d%%;', $image_position_x, $image_position_y);
+                    $image_style = sprintf('object-fit: %s; object-position: %d%% %d%%;', $image_fit, $image_position_x, $image_position_y);
+                    $image_class = 'news-posts__item-image' . ($image_fit === 'contain' ? ' news-posts__item-image--contain' : '');
                     if ($posts_shown >= 2) {
                         $postCLass = 'news-posts__item--hidden';
                         // Get the 
                     }
                     ?>
-                    <div class="<?php echo esc_attr($postCLass); ?>">
-                        <?php if (has_post_thumbnail()) : ?>
+                    <a href="<?php echo esc_url(get_permalink()); ?>" class="<?php echo esc_attr($postCLass); ?>">
+                        <?php if (has_post_thumbnail()): ?>
                             <?php echo get_the_post_thumbnail(get_the_ID(), 'large', array(
-                                'class' => 'news-posts__item-image',
+                                'class' => $image_class,
                                 'style' => $image_style,
                                 'loading' => 'lazy',
                             )); ?>
-                        <?php else : ?>
+                        <?php else: ?>
                             <div class="news-posts__item-image news-posts__item-image--empty" aria-hidden="true"></div>
                         <?php endif; ?>
-                        <div class="news-posts__item-content">
+                        <div class="news-posts__item-content" style="background-color: var(--section-card-bg);">
                             <div class="news-posts__details">
-                                <p class="news-posts__category">
+                                <p class="news-posts__category label">
                                     <?php
                                     $categories = get_the_category();
                                     if (!empty($categories)) {
                                         echo esc_html($categories[0]->name);
                                     }
-                                    ?>  •  <?php echo get_the_date(); ?></p>
+                                    ?> • <?php echo get_the_date(); ?>
+                                </p>
                             </div>
                             <p class="news-posts__item-title"><?php echo get_the_title(); ?></p>
-                            <a href="<?php echo get_permalink(); ?>" class="news-posts__read-more primary-button">Continiue Reading</a>
+                            <span class="news-posts__read-more primary-button">Continiue Reading</span>
                         </div>
-                    </div>
+                    </a>
                     <?php
                     $posts_shown++;
                 endwhile;
                 echo '</div>';
                 wp_reset_postdata();
-            else :
+            else:
                 echo '<p>No posts found.</p>';
             endif;
 
-            if ($posts_shown > 2) :
-            ?>
-            
-            <div class="load-more-container">
-                 <a class="secondary-button" id="load-more-posts">Load More <?php echo !empty($categories) ? esc_html($categories[0]->name) : 'Posts'; ?> </a>
-            </div>
-            <?php
+            if ($posts_shown > 1):
+                ?>
+
+                <div class="load-more-container">
+                    <a class="secondary-button" id="load-more-posts">Load More
+                        <?php echo !empty($categories) ? esc_html($categories[0]->name) : 'Posts'; ?> </a>
+                </div>
+                <?php
             endif;
             ?>
         </div>
